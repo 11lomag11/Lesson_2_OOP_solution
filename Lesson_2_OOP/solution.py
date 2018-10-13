@@ -6,6 +6,15 @@ class Car:
 		self.max_speed = max_speed
 		self.drag_coef = drag_coef
 		self.time_to_max = time_to_max
+
+	def get_car_speed(self, competitor_time, wind_speed):
+		if competitor_time == 0:
+			return 1
+		else:
+			_speed = (competitor_time / self.time_to_max) * self.max_speed
+			if _speed > wind_speed:
+				_speed -= (self.drag_coef * wind_speed)
+			return _speed
 	
 class Weather:
 	def __init__(self, max_wind_speed):
@@ -33,13 +42,7 @@ class Competition:
 			competitor_time = 0
 			for _ in range(self.distance):
 				wind_speed = weather.get_wind_speed
-				if competitor_time == 0:
-					_speed = 1
-				else:
-					_speed = (competitor_time / car.time_to_max) * car.max_speed
-					if _speed > wind_speed:
-						_speed -= (car.drag_coef * wind_speed)
-
+				_speed = Car.get_car_speed(car, competitor_time, wind_speed)
 				competitor_time += float(1) / _speed
 
 			print("Car <%s> result: %f" % (car.name, competitor_time))

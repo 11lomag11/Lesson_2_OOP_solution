@@ -11,9 +11,14 @@ class IOperator:
 	def get_damage(self):
 		pass
 	
-	@abstractmethod
-	def start(self, competitors, weather):
-		pass
+
+class Damage(IOperator):
+	
+	def get_damage(self):
+		rand = random()
+		if rand <= 0.015: return 1
+		else: return 0
+	
 
 class Car:
 	def __init__(self, name, max_speed, drag_coef, time_to_max, health_points):
@@ -22,6 +27,16 @@ class Car:
 		self.drag_coef = drag_coef
 		self.time_to_max = time_to_max
 		self.health_points = health_points
+
+	def get_car_speed(self, competitor_time, wind_speed):
+		if competitor_time == 0:
+			return 1
+		else:
+			_speed = (competitor_time / self.time_to_max) * self.max_speed
+			if _speed > wind_speed:
+				_speed -= (self.drag_coef * wind_speed)
+			return _speed
+	
 
 class Weather:
 	
@@ -32,6 +47,7 @@ class Weather:
 	def get_wind_speed(self):
 		wind_speed = randint(0, self.__max_wind_speed)
 		return wind_speed
+
 
 class Wrapper(IOperator):
 	def __init__(self, obj):
@@ -47,8 +63,8 @@ class Wrapper(IOperator):
 	def start(self, competitors, weather):
 		return self.obj.start(competitors, weather)
 
-class Competition(IOperator):
-	
+
+class Competition():
 	instance = None
 
 	def __new__(cls, *args, **kwargs):
@@ -60,28 +76,18 @@ class Competition(IOperator):
 	
 	def __init__(self, distance):
 		self.distance = distance
-
-	def get_damage(self):
-		rand = random()
-		if rand <= 0.015: return 1
-		else: return 0
 		
-
 	def start(self, competitors, weather):
 		for car in competitors:
 			competitor_time = 0
 			for _ in range(self.distance):
 				wind_speed = weather.get_wind_speed
-				if competitor_time == 0:
-					_speed = 1
-				else:
-					_speed = (competitor_time / car.time_to_max) * car.max_speed
-					if _speed > wind_speed:
-						_speed -= (car.drag_coef * wind_speed)
-				car.health_points -= comp.get_damage()
+				_speed = Car.get_car_speed(car, competitor_time, wind_speed)
+				car.health_points -= critical_damage.get_damage()
 				competitor_time += float(1) / _speed
 			results.take_result(car.name, competitor_time, car.health_points)
 			
+
 class Observer(metaclass=ABCMeta):
     """
     Абстрактный наблюдатель
@@ -92,6 +98,7 @@ class Observer(metaclass=ABCMeta):
         Получение нового сообщения
         """
         pass
+
 
 class Observable(metaclass=ABCMeta):
     """
@@ -115,6 +122,7 @@ class Observable(metaclass=ABCMeta):
         for observer in self.observers:
             observer.update(message)
 
+
 class Results(Observable):
 
 	competitors = []
@@ -129,12 +137,14 @@ class Results(Observable):
 		for competitor in self.competitors:
 			print(competitor)
 
+
 class Viewers(Observer):
 	def __init__(self, name):
 		self.name = name
 
 	def update(self, message):
 		print('{}'.format(message))
+
 
 class Prototype:
 
@@ -165,10 +175,15 @@ lada = prototype.clone('objecta', name="Lada", max_speed  = 180, drag_coef = 0.3
 sx4 = prototype.clone('objecta', name="SX4", max_speed  = 180, drag_coef = 0.33, time_to_max = 44, health_points = 800)
 
 weather = Weather(max_wind_speed = 20)
+
 results = Results()
+
+damage = Damage()
+critical_damage = (Wrapper(damage))
+
 competitors = (ferrary, bugatti, toyota, lada, sx4)
 competition = Competition(10000)
-comp = (Wrapper(competition))
-comp.start(competitors, weather)
+competition.start(competitors, weather)
+
 results.register(Viewers("Зритель"))
 results.mailing_result()
