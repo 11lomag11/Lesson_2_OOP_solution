@@ -9,9 +9,13 @@ class TestGCD(unittest.TestCase):
 				string = line.split(" ") 
 				self.assertEqual(gcd.gcd(int(string[0]),int(string[1])), int(string[2]))
 
+	def	test_raises(self):
+		self.assertRaises(Exception, gcd.gcd, (0,0))
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestGCD('test_compare'))
+    suite.addTest(TestGCD('test_raises'))
     return suite
 
 runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2)
