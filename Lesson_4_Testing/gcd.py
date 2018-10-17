@@ -3,6 +3,8 @@
 def gcd(m: int, n: int) -> int:
     m = abs(m)
     n = abs(n)
+    if m == 0 and n == 0:
+        raise Exception("Нет общего делителя для двух нулей")
 
     if m == 0 and n != 0:
         return n
